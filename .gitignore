@@ -1,4 +1,5 @@
 _drafts/
+Gemfile.lock
 _site/
 .DS_Store
 .*swp
