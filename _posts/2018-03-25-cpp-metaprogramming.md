@@ -50,7 +50,7 @@ c++总是在编译的时候完成代码生成，而c++的元编程是函数式�
 
 ## 模板元编程中的eval-apply
 
-![alt text](../_images/eval-apply.gif "Eval-Apply Circle")
+![alt text]({{ site.url }}/_images/eval-apply.gif "Eval-Apply Circle")
 
 这个圈在程序语言中频繁出现。它最早应该是出现在`Lisp`语言中。其中`apply`表示将参数绑定到特定的`function`中。而`eval`表示对这个表达式求值。
 
@@ -75,7 +75,7 @@ typedef mpl::apply<_1,mpl::lambda<mpl::plus<_1,_2> > >::type t8;
 
 ### Metafunction class
 
-## Reference
+## References
 
 [1] https://en.wikipedia.org/wiki/Metaprogramming
 
