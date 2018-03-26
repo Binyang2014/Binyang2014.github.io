@@ -72,8 +72,95 @@ typedef mpl::apply<_1,mpl::lambda<mpl::plus<_1,_2> > >::type t8;
 上面是一些metaprogramming的应用，不过现在先不用了解每个表达式的真正含义，在阐述每个表达式的之前，我们需要先对一些基本概念做一下说明：
 
 ### Metafunction
+这里的`metafunction`也被称作`class template as a funciton`。就是将template当成一种函数来完成对类型的计算。其中metafunction与其他function的显著不同点有：
+1. 有偏特化，所以对于特定的类型可以完成不同的处理方式
+2. 可以有多个返回值。metafunciton返回的其实是类型信息。所以对于一个`template class`来说可以定义许多类型，从而提供多种返回值。
+
+下面是一个`metafuntion`的例子
+```cpp
+template <bool, class L, class R>
+struct IF
+{
+  typedef R type;
+  typedef const R const_type
+};
+
+template <class L, class R>
+struct IF<true, L, R>
+{
+  typedef L type; 
+  typedef const L const_type
+};
+
+IF<false, int, long>::type i; // is equivalent to long i;
+IF<true,  int, long>::type i; // is equivalent to int i;
+```
+
+这个例子中`struct IF<true, L, R>`就是偏特化的一种体现，而`type`和`const_type`都是返回值。
 
 ### Metafunction class
+`Metafunciton clss`是一个内嵌着名为`apply`的metafunciton的class。举个例子：
+
+```cpp
+struct add_pointer_f
+{
+    template<class T>
+    struct apply
+    {
+        typedef T* type;
+    };
+};
+```
+这个例子中`add_pointer_f`就是典型的一个`metafunction class`。
+
+对于boost::mpl库来说，可以完成这样一个调用：
+```cpp
+typedef boost::mpl::apply<add_pointer_f, int>::type t;
+static_assert(std::is_same<t, int*>::value, "not same type");
+```
+通过apply方法取得`metafunciton class`中的`apply`结构。这里的apply其实相当于参数绑定的过程。而`::type`就是`eval`的过程。
+
+### 一个小例子
+
+为了更好的说明`apply-eval`这一过程，我们来举个小例子。
+现在我们想完成这么一个运算：通过调用`twice<F, T>::type`完成调运一个操作作用在类型T上两次。比如我们可以通过`twice<add_ponter_f, int>::type`来得到int **。
+
+```cpp
+template<class F, class T>
+struct twice
+{
+    typedef typename F::apply<T>::type once;
+    typedef typename F::apply<once>::type type;
+};
+```
+
+当然，我们可以通过继承来简化一下：
+```cpp
+template<class F, class T>
+struct twice :
+    typename F::apply<F, typename F::apply<T>::type>::type
+{};
+```
+
+再或者了，再包一层简化一下：
+```cpp
+template <class UnargMetaFuntionClass, class T>
+struct applyUnarg :
+    typename UnargMetaFuntionClass<F, T>::type
+{};
+
+template<class F, class T>
+struct twice :
+    applyUnarg<F, typename applyUnarg<F, T>::type>
+{};
+```
+
+最后我们还是写出我们熟悉的形式
+```cpp
+template<class F, class T>
+struct twice : mpl::apply<F, typename mpl::apply<F, T>::type>
+{};
+```
 
 ## References
 
