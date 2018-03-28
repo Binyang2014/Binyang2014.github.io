@@ -162,8 +162,60 @@ struct twice : mpl::apply<F, typename mpl::apply<F, T>::type>
 {};
 ```
 
+通过这个例子我们已经大致的指导了mpl::apply的使用方法。下面我们可以开始解决最开始的问题：8个typedef 式子的含义。
+
+## 8个typedef
+
+### 关于lambda和place_hodler
+
+```cpp
+typedef mpl::lambda<mpl::lambda<_1> >::type t1;
+```
+
+这里mpl::lambda不过是为`metafunction`包装成`metafunction class`,从而省去需要自己定义`add_pointer_f`而`_1`是`place_hodler`。
+关于`place_hodler`可以举个简单的小例子：
+
+```cpp
+typedef mpl::apply<boost::add_pointer<_1>, int>::type t;
+static_assert(std::is_same<t, int *>::type, "no same");
+```
+这里的type就是int*, 而`_1`表示了一个参数的占位符, 参数的具体内容在后面给出。通过使用占位符，`boost::add_pointer`从`metafunction`成为了一个`metafunction class`,从而能被`apply`调用。
+知道了这些，我们知道`_1`需要被`apply`调用才能完成参数绑定。所以对于式子1我们先写出如下语句：
+```cpp
+typedef mpl::apply<t1, boost:add_pointer<_1>>::type add_pointer_f;
+```
+由于`add_pinter_f`仍需要参数，所以这里还需要`place_hodler`来延迟参数解析。到这里我们就可以看出，式1其实是用来把一个`meta fcuntion`转成一个`meta function class`
+所以下面的asset成立。由于式1使用了两次`lambda`，所以这里我们需要使用两次`apply`使用相关的`metafunction`
+```cpp
+static_assert(std::is_same<mpl::apply<add_pointer_f, int>::type, int *>::type, "no same");
+```
+
+
+对于`typedef mpl::apply<_1,mpl::plus<_1,_2> >::type t2;`来说：
+
+首先在apply中`_1`也是一种`lambda`表达式，所以这里的type相当于`mpl::plus<_1, _2>`。即把第二个参数替换成第一个`lambda`表达式的参数并解析。所以我们可以这样调用t2:
+```cpp
+mpl::apply<t2, mpl::int_<41>, mpl::int_<1>>::value == 42;
+```
+
+### 其余的解答
+
+其余的几个式子根据前面所说可以很直观的看出：
+```cpp
+typedef mpl::apply<_1,std::vector<int> >::type t3; //(std::vector<int>)
+typedef mpl::apply<_1,std::vector<_1> >::type t4; //(mpl::apply<t4, double>  type is std:vector<double>)
+typedef mpl::apply<mpl::lambda<_1>,std::vector<int> >::type t5; // std::vector<int>
+typedef mpl::apply<mpl::lambda<_1>,std::vector<_1> >::type t6; // same as t4
+typedef mpl::apply<mpl::lambda<_1>,mpl::plus<_1,_2> >::type t7; // same as t2
+typedef mpl::apply<_1,mpl::lambda<mpl::plus<_1,_2> > >::type t8; //same as t7
+```
+
+当然，最好还是参考boost::mpl相关手册[[3]](http://www.boost.org/doc/libs/1_62_0/libs/mpl/doc/refmanual/)，可以很清楚的得知元编程实现的细节，包括`place_hoder`的实现
+
 ## References
 
 [1] https://en.wikipedia.org/wiki/Metaprogramming
 
 [2] C++ Template Metaprogramming: Concepts, Tools, and Techniques from Boost and Beyond
+
+[3] http://www.boost.org/doc/libs/1_62_0/libs/mpl/doc/refmanual/
