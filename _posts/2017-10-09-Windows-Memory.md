@@ -83,6 +83,6 @@ AWE是Windows提供的一个功能，该功能提供了一个使32位处理器�
 3. 最后一步为了使用分配的内存空间，使用`MapUserPhysicalPages`或者`MapUserPhysicalPagesScatter`函数完成物理地址到虚拟地址的映射。
 
 下图显示了AWE使用的一种情形。
-![AWS Pic](../media/image/AWE_Mapping.PNG "AWE 使用的一种情形")
+![AWS Pic](/media/image/AWE_Mapping.PNG "AWE 使用的一种情形")
 使用AWS使得进程可以在虚拟地址空间中只分配一个比较小的窗口，而在物理地址上分配一个较大的内存，通过改变映射的位置从而使用户在32bit机器上可以访问多于2G的的内存空间。
 AWE提供了一种保护机制。由于AWE中的内存是不可存储到`page file`中去的，使得拷贝`page file`来重现相应程序变得不可能。
