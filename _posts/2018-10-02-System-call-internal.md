@@ -46,7 +46,7 @@ x86处理器的权限分为4级，也就是我们常见的`ring0-ring3`。其中
 2. 检查`%cs`中的level是否<= IDT entry中存储的level。如果不是则返回错误代码13
 3. 将ss，和esp存储到处理器其他寄存器中 （只在%cs level为 > 目标level时进行）
 4. load target %ss和%esp ---- 此时进入内核栈空间
-5. push %ss，%esp（第3步进行是使用）
+5. push %ss，%esp（第3步进行时使用）
 6. push %eflag
 7. push %cs -- code segment
 8. push %eip
