@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "System call internal"
+title: "系统调用详解"
 date:  2018-10-02 19:02:00 +0800
 ---
 
